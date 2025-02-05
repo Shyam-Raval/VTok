@@ -76,5 +76,17 @@ class GoogleAuthUiClient(
 
     }
 
+    fun getSignedInUser(): UserData? = auth.currentUser?.run{
+        UserData(
+            email = email.toString(),
+            username = displayName,
+            userId =  uid,
+            ppurl = photoUrl.toString()
+        )
+    }
+
+
+
+
 
 }

@@ -32,7 +32,7 @@ import com.example.vtok.R
 
 //@Preview(showSystemUi = true)
 @Composable
-fun SignInScreen(
+fun SignInScreenUI(
     onSignInClick: ()->Unit
 ) {
     val brush = Brush.linearGradient(
