@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "386456955888",
+    "project_id": "vtok-40941",
+    "storage_bucket": "vtok-40941.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:386456955888:android:533a44c090539c670c8b35",
+        "android_client_info": {
+          "package_name": "com.example.vtok"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "386456955888-madp94ltg490i9j5doj85af6pgttn6dm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.vtok",
+            "certificate_hash": "deb268a194a11132aac0e2880b9f32fb75cf1883"
+          }
+        },
+        {
+          "client_id": "386456955888-lgecee78g01lal4d0130o0jlf8k9th23.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIehASMJu5O_pICEko0A8yY60GOhgLIc4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "386456955888-lgecee78g01lal4d0130o0jlf8k9th23.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
