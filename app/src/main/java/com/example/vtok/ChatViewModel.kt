@@ -2,6 +2,7 @@ package com.example.vtok
 
 import android.content.ContentValues
 import android.icu.util.Calendar
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,6 +17,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -261,6 +263,43 @@ class ChatViewModel : ViewModel() {
                 }
             }
         }
+
+    }
+    fun uploadImage(img: Uri, callback:(String)->Unit){
+        var storageRef = Firebase.storage.reference
+        val imageRef = storageRef.child("$IMAGE_COLLECTION/${System.currentTimeMillis()}")
+        imageRef.putFile(img).addOnSuccessListener{
+            imageRef.downloadUrl.addOnSuccessListener {
+                var url = it.toString()
+                callback(url)
+            }.addOnFailureListener{
+                callback("")
+            }
+        }.addOnFailureListener{
+            callback("")
+        }.addOnCompleteListener{
+
+        }
+    }
+
+    fun uploadStory(url: String) {
+       val image = Image(
+           imgUrl = url ,
+           time = Timestamp(Calendar.getInstance().time)
+       )
+         val id =  firestore.collection(STORIES_COLLECTION).document().id
+        val story= Story(
+            id = id,
+            userId =state.value.userData?.userId.toString(),
+            userName = state.value.userData?.username,
+            ppurl = state.value.userData?.ppurl.toString(),
+            images = listOf(image)
+
+
+        )
+        firestore.collection(STORIES_COLLECTION).document(id).set(story)
+
+
 
     }
 

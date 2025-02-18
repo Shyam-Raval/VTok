@@ -71,8 +71,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation (libs.material.icons.extended)
-
-
+    implementation (libs.android.image.cropper)
+    implementation (libs.lottie.compose)
 
 
 

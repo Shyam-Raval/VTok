@@ -1,5 +1,11 @@
 package com.example.vtok.screens
 
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -27,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddComment
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,14 +45,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCompositionContext
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -60,12 +72,17 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
+import com.airbnb.lottie.compose.LottieAnimatable
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.vtok.AppState
 import com.example.vtok.ChatData
 import com.example.vtok.ChatUserData
 import com.example.vtok.ChatViewModel
 import com.example.vtok.R
 import com.example.vtok.dialogs.CustomDialogBox
+import com.example.vtok.dialogs.StoryPreview
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.logging.SimpleFormatter
@@ -75,12 +92,33 @@ import java.util.logging.SimpleFormatter
 fun ChatsScreenUI(
     viewModel: ChatViewModel = ChatViewModel(),
     state: AppState = AppState(),
-    showSingleChat: (ChatUserData, String) -> Unit ={_ , _ ,->}
+    showSingleChat: (ChatUserData, String) -> Unit = { _, _ -> }
 ) {
     val padding by animateDpAsState(targetValue = 10.dp)
     val chats = viewModel.chats
     val filterChats = chats
     val selectedItem = remember { mutableStateListOf<String>() }
+    var border = Brush.sweepGradient(
+        listOf(
+            Color(0xFFA7e6FF),
+            Color(0xFFA7e6FF),
+
+            )
+    )
+    var imgUri by remember{
+        mutableStateOf<Uri?>(null)
+    }
+    var launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) {
+            imgUri = it
+
+    }
+    var bitmap by remember {
+        mutableStateOf<Bitmap?>(null)
+    }
+    var isUploading by remember {
+        mutableStateOf(false)
+    }
+    //val lottieAnimationFile by rememberLottieComposition(LottieCompositionSpec.)
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -121,19 +159,36 @@ fun ChatsScreenUI(
                 }
             )
         }
+        imgUri?.let{
+            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.P){
+                var src =  ImageDecoder.createSource(LocalContext.current.contentResolver, it )
+                bitmap = ImageDecoder.decodeBitmap(src)
+
+            }
+            StoryPreview(
+                uri = imgUri,
+                hideDialog = {
+                    imgUri = null
+                },
+                upload = {
+                    isUploading = true
+                    viewModel.uploadImage(if(it!=null)it else imgUri!!){
+                        viewModel.uploadStory(it)
+                        isUploading = false
+
+                    }
+                    imgUri = null
+
+                }
+
+            )
+        }
         Column(
             modifier = Modifier.padding(top = 36.dp)
         ) {
-            LazyRow(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 10.dp , top = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ){
-                item{
-                //    Box(modifier = Modifier.padding(bottom = 20.dp , start = 5.dp , end = 5.dp ).size(70.dp).drawWithCache {  })
-                }
-            }
+
             Box {
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
@@ -151,43 +206,125 @@ fun ChatsScreenUI(
                         )
 
 
-                        }
+                    }
                     Spacer(modifier = Modifier.weight(1f))
 
-                    IconButton(onClick = {}, modifier = Modifier
-                        .background(
-                            colorScheme.background.copy(alpha = 0.2f),
-                            CircleShape
-                        )
-                        .border(
-                            0.05.dp,
-                            color = Color(0xFF35567A),
-                            CircleShape
-                        )) {
+                    IconButton(
+                        onClick = {}, modifier = Modifier
+                            .background(
+                                colorScheme.background.copy(alpha = 0.2f),
+                                CircleShape
+                            )
+                            .border(
+                                0.05.dp,
+                                color = Color(0xFF35567A),
+                                CircleShape
+                            )
+                    ) {
                         Icon(
                             painter = painterResource(id = R.drawable._666693_search_icon),
                             contentDescription = "",
                             modifier = Modifier.scale(0.7f)
                         )
-                        }
+                    }
                     Spacer(modifier = Modifier.weight(0.1f))
 
-                        Column {
-                            IconButton(
-                                onClick = {},
-                                modifier = Modifier
-                                    .background(
-                                        colorScheme.background.copy(alpha = .2f),
-                                        CircleShape
-                                    ).border(0.05.dp , Color(0xFF35567A) , CircleShape )
+                    Column {
+                        IconButton(
+                            onClick = {},
+                            modifier = Modifier
+                                .background(
+                                    colorScheme.background.copy(alpha = .2f),
+                                    CircleShape
+                                )
+                                .border(0.05.dp, Color(0xFF35567A), CircleShape)
 
-                            ) {
-                                Icon(imageVector = Icons.Filled.MoreVert, contentDescription = "")
+                        ) {
+                            Icon(imageVector = Icons.Filled.MoreVert, contentDescription = "")
+
+                        }
+                    }
+
+
+                }
+            }
+            LazyRow(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = 10.dp, top = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                item {
+                    if(isUploading){
+                        Column (
+                            verticalArrangement = Arrangement.spacedBy(5.dp),
+                            horizontalAlignment =  Alignment.CenterHorizontally
+
+                        ){
+                            Box(
+                                modifier = Modifier.size(77.dp).padding(3.dp),
+                                contentAlignment = Alignment.Center
+                            ){
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(state.userData?.ppurl)
+                                            .crossfade(true)
+                                            .allowHardware(false)
+                                            .build(),
+                                        placeholder = painterResource(id = R.drawable.person_placeholder_4),
+                                        error = painterResource(id = R.drawable.person_placeholder_4),
+                                        contentDescription=null,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.clip(CircleShape).fillMaxSize()
+
+                                )
+
+//                                LottieAnimation(
+//                                    composition =
+//                                )
 
                             }
                         }
+                    }
+                 if(!isUploading)   Box(
+                        modifier = Modifier
+                            .padding(bottom = 20.dp, start = 5.dp, end = 5.dp)
+                            .size(70.dp)
+                            .drawWithCache {
+                                onDrawBehind {
+                                    drawCircle(
+                                        brush = border,
+                                        style = Stroke(
+                                            width = 8f,
+                                            pathEffect = PathEffect.dashPathEffect(
+                                                floatArrayOf(
+                                                    (35.dp.toPx() * 2 * Math.PI.toFloat() / 5) - 15f,
+                                                    15f
+                                                ), 0f
+                                            )
+                                        )
+                                    )
+                                }
 
+                            }
+                            .padding(5.dp)
+                            .background(
+                                colorScheme.background.copy(
+                                    alpha = .4f
+                                ), CircleShape
+                            )
+                            .clickable {
+                                launcher.launch("image/*")
+                            },
+                        contentAlignment = Alignment.Center
 
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Add,
+                            contentDescription = "",
+                            tint = colorScheme.onBackground.copy(alpha = .8f),
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
                 }
             }
             LazyColumn(

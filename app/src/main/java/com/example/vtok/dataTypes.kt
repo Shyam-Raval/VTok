@@ -76,3 +76,14 @@ data class ChatUserData(
 
 )
 
+data class Image(
+    val imgUrl :String = "",
+    val time : Timestamp?= Timestamp.now(),
+)
+data class Story(
+    val id:String="",
+    val userId: String ="",
+    var userName:String?="",
+    val ppurl: String="",
+    val images: List<Image> = emptyList()
+)
